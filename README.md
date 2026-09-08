@@ -105,19 +105,48 @@ cd SaaS_Hackathon
 
 The virtual environment lives at the **repository root**, not inside `backend/`.
 
+**macOS / Linux:**
+
 ```bash
 # From the repository root. Pin the interpreter — see Prerequisites.
 python3.12 -m venv .venv312
-source .venv312/bin/activate          # Windows: .venv312\Scripts\activate
+source .venv312/bin/activate
 
 pip install -r backend/requirements.txt
 ```
+
+**Windows (PowerShell):**
+
+```powershell
+# From the repository root. Pin the interpreter — see Prerequisites.
+py -3.12 -m venv .venv312
+.\.venv312\Scripts\Activate.ps1
+
+pip install -r backend\requirements.txt
+```
+
+> If `py -3.12` isn't found, install Python 3.12 or 3.13 from python.org
+> (not the Microsoft Store version — it's often missing or aliased) and make
+> sure "Add python.exe to PATH" is checked during setup.
+>
+> Use the `.\` prefix when running `Activate.ps1` — PowerShell treats a bare
+> `.venv312\Scripts\Activate.ps1` as a module name, not a relative script path,
+> and errors with "The module '.venv312' could not be loaded". If you instead
+> hit "running scripts is disabled on this system", the execution policy is
+> blocking it; run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`
+> in that terminal session and retry.
 
 Verify that transcription is actually available before demoing — this must print
 `ok`, otherwise clips are cut from a stub transcript:
 
 ```bash
+# macOS/Linux
 .venv312/bin/python -c "import faster_whisper; print('ok')"
+```
+
+```powershell
+# Windows
+.venv312\Scripts\python.exe -c "import faster_whisper; print('ok')"
 ```
 
 ### 3. Environment Variables
@@ -159,9 +188,18 @@ so the demo needs the backend and the tunnel — nothing else.
 Must be run from `backend/`, because `main.py` imports `config`, `routers`, and
 `services` as top-level modules.
 
+**macOS / Linux:**
+
 ```bash
 cd backend
 ../.venv312/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000
+```
+
+**Windows (PowerShell):**
+
+```powershell
+cd backend
+..\.venv312\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
 - UI: `http://127.0.0.1:8000/`
@@ -169,6 +207,11 @@ cd backend
 
 Bind to `127.0.0.1`, not `0.0.0.0` — the Cloudflare Tunnel connects over loopback,
 and there is no authentication on these endpoints.
+
+> **Windows note:** if only Python 3.11 is available on the machine (no 3.12/3.13
+> install), the app still runs — `faster-whisper`'s `av` dependency ships prebuilt
+> wheels for 3.11 too. Just make sure the `faster_whisper` import check above
+> prints `ok`; only Python 3.14 is known to break the build.
 
 ### 2. Start the Cloudflare Tunnel
 
